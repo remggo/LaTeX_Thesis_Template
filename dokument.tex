@@ -1,0 +1,63 @@
+% arara: pdflatex: { draft: on }
+% arara: biber
+% arara: makeglossaries
+% arara: pdflatex: { draft: on }
+% arara: pdflatex: { synctex: on }
+% arara: clean: {files : [dokument.log, dokument.aux, dokument.dvi, dokument.lof, dokument.lot, dokument.bit, dokument.idx, dokument.glo, dokument.bbl, dokument.bcf, dokument.ilg, dokument.toc, dokument.ind, dokument.out, dokument.blg, dokument.fdb_latexmk, dokument.fls, dokument.acn, dokument.acr, dokument.alg, dokument.glg, dokument.gls, dokument.glsdefs, dokument.ist, dokument.lol, dokument.run.xml, dokument.tdo]}
+\documentclass[a4paper, 12pt, oneside, openright]{report}
+
+\usepackage[ngerman,utf8]{sty/seminararbeit}
+
+\makeglossaries
+\input{content/glossary}
+% Counter um die Römischen Seiten durchlaufen zu lassen
+\newcounter{seitenZahl}
+
+\addbibresource{references.bib} % Referenzieren der der Quellen
+
+\begin{document}
+    \listoftodos
+	
+    \setcounter{page}{0}
+	\pagenumbering{roman}
+	\gentitlepage{pics/Innen-square}{logos/thi_FEI_logo_wb_CMYK}{\scalebox{1.2}{Remko van Wagensveld}}
+			{\scalebox{1}{Titel}\\\scalebox{1}{Untertitel}}
+
+
+	%-----------------------------------------------------------------------------------------------
+	% Schmutztitelblatt
+	%-----------------------------------------------------------------------------------------------		
+	\input{content/schmutztitel}
+	
+	\input{content/vortext}
+	
+	\tableofcontents
+	
+	\setcounter{seitenZahl}{\arabic{page}}
+	
+	% TEXT ----------------------------------
+
+	\printbibliography
+	\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+	
+	
+	\pagenumbering{roman}
+	% Seitenzahlen gehen da weiter wo das Inhaltsverzeichnis aufgehört hat
+	\stepcounter{seitenZahl}
+	\setcounter{page}{\theseitenZahl}
+
+	\listoffigures 
+	\begingroup
+		% Keine neue Seite Anfangen
+		\let\clearpage\relax
+		\lstlistoflistings % Listingsverzeichnis
+		\addcontentsline{toc}{chapter}{Listings} % Einfügen in das Inhaltsverzeichnis (geht nicht automatisch.)
+		
+		% Symbolverzeichnis umbennenn in Abkürzungsverzeichnis, da geeigneter in dieser Seminararbeit
+		\printglossary[title=Glossar,toctitle=Glossar]
+		\thispagestyle{empty} %Workaround um keine Kapitelzeile oben im Abkürzungsverzeichnis zu haben
+	\endgroup
+	
+	% APPENDIX ----------------------------------
+	
+\end{document}

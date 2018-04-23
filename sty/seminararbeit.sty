@@ -1,0 +1,326 @@
+% -----------------------------------------------------------------------------------------------------------
+% META-INFO
+% -----------------------------------------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{sty/seminararbeit}[2015/10/24 Seminararbeiten]
+
+% -----------------------------------------------------------------------------------------------------------
+% SEMINARARBEIT PACKAGE OPTIONS
+%-----------------------------------------------------------------------------------------------------------
+\DeclareOption{ngerman}{
+	\PassOptionsToPackage{\CurrentOption}{babel}
+}
+
+\DeclareOption{english}{
+	\PassOptionsToPackage{\CurrentOption}{babel}
+}
+
+\DeclareOption{utf8}{
+	\PassOptionsToPackage{\CurrentOption}{inputenc}	
+}
+
+\DeclareOption{latin1}{
+	\PassOptionsToPackage{\CurrentOption}{inputenc}	
+}
+
+\DeclareOption{final}{
+    \PassOptionsToPackage{disable}{todonotes}
+    \PassOptionsToPackage{nostamp}{draftwatermark}
+}
+
+\newif\ifshortdoc\shortdocfalse
+\DeclareOption{shortdoc}{
+	\shortdoctrue
+}
+
+\newif\ifnoindent\noindentfalse
+\DeclareOption{noindent}{
+	\noindenttrue
+}
+
+%% Fallback
+\DeclareOption*{
+	\ClassWarning{seminararbeit.sty}{Unknown option '\CurrentOption'}
+}
+%% Optionverarbeitung ist hiermit beendet!
+\ProcessOptions\relax 
+
+% -----------------------------------------------------------------------------------------------------------
+% PACKAGES
+% -----------------------------------------------------------------------------------------------------------
+\usepackage{geometry}
+\usepackage{color}
+\usepackage{sectsty} % Change color of Sections
+\usepackage{babel} 
+
+% Pakete für Titlepage
+\usepackage[pdftex]{rotating,graphicx}
+\usepackage{eso-pic,picture}
+\usepackage[absolute]{textpos}
+
+% For fancy Headers & Footers
+\usepackage{fancyhdr} 
+\usepackage{inputenc}
+\usepackage{emptypage}
+
+% One line for autocompletion of \cite in TexStudio
+\usepackage[backend=biber, style=numeric-comp]{biblatex}
+
+% Schönere Links ohne roten Rand um den Link
+\usepackage[pdfpagelabels,hidelinks]{hyperref}
+
+\usepackage{csquotes} % Schönere Anführungszeichen
+
+\usepackage{listings} % Schönere Quellcodes
+
+\usepackage{xparse} % Für Declare Document Command (e.g. \newdualentry)
+
+\usepackage[german,plain]{fancyref} % Angenehmere Referenzen - Bsp: \fref{ch:bla} --> Kapitel bla
+
+\usepackage{caption}
+\usepackage{ifthen} % Für Nomenklatur
+
+\usepackage[acronym]{glossaries} % For seperate Acronym and Glossary Lists
+%\usepackage{glossaries} % For combined Acronym and Glossary List
+
+\usepackage{tabularx} % for nice Tables
+\usepackage{hhline} % More advanced horizontal lines in Tables
+\usepackage{enumitem} % For descriptions with linebreak
+
+\usepackage{todonotes} % Todolist
+\usepackage{draftwatermark}
+
+% Do not indent New Paragraphs
+\ifnoindent
+	\usepackage{parskip}
+\fi
+
+
+% -----------------------------------------------------------------------------------------------------------
+% DEFINITIONS
+% -----------------------------------------------------------------------------------------------------------
+\definecolor{thi-blue}{RGB}{0, 90, 155} % Kapitelfarbe
+\definecolor{thi-green}{RGB}{150, 190, 0} 
+\definecolor{fpDarker}{RGB}{0, 55, 94} % Für TitlePage
+\definecolor{fpColor}{RGB}{0, 73, 125} % Für TitlePage
+
+% -----------------------------------------------------------------------------------------------------------
+% COMMANDS AND ENVIRONMENTS
+% -----------------------------------------------------------------------------------------------------------
+\newcommand\AtPageUpperRight[1]{\AtPageUpperLeft{%
+		\makebox[\paperwidth][r]{#1}}}
+
+% Syntax: \newdualentry[glossary options][acronym options]{label}{abbrv}{long}{description}
+\DeclareDocumentCommand{\newdualentry}{ O{} O{} m m m m } {
+	\newglossaryentry{gls-#3}{name={#5},text={#5\glsadd{#3}},
+		description={#6},#1
+	}
+	\makeglossaries
+	\newacronym[see={[Glossar:]{gls-#3}},#2]{#3}{#4}{#5\glsadd{gls-#3}}
+}
+
+% Adapted from Siemens https://github.com/siemens/embb/tree/master/doc/tutorial/sty/siemens-single.sty
+\def\gentitlepage#1#2#3#4{
+	\fboxrule 0.0pt  % Keine Rahmen
+	\begin{titlepage}
+		\phantom{Die Titelseite} % Erstellen einer leeren unsichtbaren Box, da sonst gleich der Content beginnt.
+		\AddToShipoutPictureBG{ % Hintergrundbild - hier Frankfurt
+			\AtPageUpperLeft{\raisebox{-\height} % Oben Links einfügen
+				{\includegraphics[width=\paperwidth]{#1}} % Picturepfad 
+			}
+		}
+		% thi Logo
+		\AddToShipoutPictureFG*{
+			\AtPageUpperRight{%
+				\put(-5.4cm, -1cm){% Oben Rechts
+					\makebox(0,0)[lt]{
+						\colorbox{white}{
+							\includegraphics[width=4.5cm]{#2}\hspace{1cm} % Logo
+							}
+						}%
+				}%
+			}%
+		}
+	\begin{textblock}{4}[0.0,0.0](1,0)
+		\vspace{\paperwidth}
+		\vspace{-1.2cm}
+		\fcolorbox{black}{fpDarker}{ % {Rahmenfarbe}{Hintergrundfarbe} Hintergrund des Textes
+			\vspace{0.1cm}
+			\begin{minipage}[c][1cm]{\paperwidth}
+				\hspace{0.5cm} %0.8cm
+				\fontsize{16}{20}\selectfont
+				\textcolor{white}{#3}  % Autor einsetzen (Argument #3)
+			\end{minipage}
+		}
+	\end{textblock}
+	\begin{textblock}{4}[0.0,0.0](1,0)
+		\vspace{\paperwidth}
+		\fcolorbox{black}{fpColor}{
+			\hspace{0.5cm}
+			\begin{minipage}[c][4cm]{\paperwidth}
+				\vspace{-0.5cm}
+				\fontsize{36}{44}\selectfont
+				\textcolor{white}{#4} % Titel einfügen
+			\end{minipage}
+		}
+	\end{textblock}
+	\end{titlepage}
+	\ClearShipoutPicture
+}
+
+\newenvironment{bottompar}{\par\vspace*{\fill}}{\clearpage}
+\def\enq#1{\enquote{#1}}
+
+% Für die Nomenklatur
+%\renewcommand{\nomgroup}[1]{
+%	\ifthenelse{\equal{#1}{A}}								% IF        
+%	{\vspace{1em}\item[\textbf{Abkürzungen}]} 				% THEN      
+%	{\ifthenelse{\equal{#1}{F}}								% ELSE IF   
+%		{\vspace{1em}\item[\textbf{Formelzeichen}]} 		% THEN      
+%		{}													% ELSE      
+%	}											
+%}
+
+\newcommand{\absatz}{\hfill\\\hfill\\}
+\newcommand{\erklaerung}[1]{
+	% Erklärung
+	\chapter*{Erklärung}
+	Ich erkläre hiermit, dass ich #1 selbständig verfasst habe. Ich habe
+	keine anderen als die angegeben Quellen oder Hilfsmittel benutzt. Ich habe wörtliche und
+	sinngemäße Zitate als solche gekennzeichnet.\\[10ex]
+	Ingolstadt, \today
+}
+%-----------------------------------------------------------------------------------------------------------
+% Listing extension for fancyref using the prefix "lst".
+% Adapted from: http://tex.stackexchange.com/questions/70835/how-to-extend-fancyref-for-listings
+%-----------------------------------------------------------------------------------------------------------
+\newcommand*{\fancyreflstlabelprefix}{lst}
+
+\newcommand{\trim}[1]{\zap@space#1 \@empty}
+
+\fancyrefaddcaptions{english}{%
+	\providecommand*{\freflstname}{listing}%
+	\providecommand*{\Freflstname}{Listing}%
+}
+
+\fancyrefaddcaptions{german}{%
+	\providecommand*{\freflstname}{listing}%
+	\providecommand*{\Freflstname}{Listing}%
+}
+
+\frefformat{plain}{\fancyreflstlabelprefix}{\freflstname\fancyrefdefaultspacing#1}
+\Frefformat{plain}{\fancyreflstlabelprefix}{\Freflstname\fancyrefdefaultspacing#1}
+
+\frefformat{vario}{\fancyreflstlabelprefix}{%
+	\freflstname\fancyrefdefaultspacing#1#3%
+}
+\Frefformat{vario}{\fancyreflstlabelprefix}{%
+	\Freflstname\fancyrefdefaultspacing#1#3%
+}
+
+\newcommand{\todoinline}[1]{\todo[inline]{#1}}
+
+
+% -----------------------------------------------------------------------------------------------------------
+% SETTINGS
+% -----------------------------------------------------------------------------------------------------------
+% Definieren des Bereichs
+% wo LaTex text setzen darf.
+\geometry
+{
+ left=2.5cm,   %linker Seitenrand
+ right=2.5cm,  %rechter Seitenrand
+ top=2.5cm,     %oben der Abstand
+ bottom=2.5cm   %Unten der Abstand
+}
+
+% Color Chapters, Sections and Subsections
+\chapterfont{\color{thi-blue}}
+\sectionfont{\color{thi-blue}}
+\subsectionfont{\color{thi-blue}}
+
+% Setup fancy Headers only if doc is not a shortdoc
+\ifshortdoc
+% Things to do if it is a Shortdoc
+\else
+	\pagestyle{fancy}
+	\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+	\fancyhf{}
+	\fancyhead[L]{\chaptername~\thechapter~\leftmark}
+	\fancyfoot[C]{\thepage}
+\fi
+
+% Setup Listings Package
+\lstset{ %
+	backgroundcolor=\color{white},   		% choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
+	basicstyle=\footnotesize\ttfamily,        				% the size of the fonts that are used for the code
+	breakatwhitespace=false, 					  % sets if automatic breaks should only happen at whitespace
+	breaklines=true,                 						% sets automatic line breaking
+	captionpos=b,							                  % sets the caption-position to bottom
+	commentstyle=\color{thi-green}, 	  	% comment style
+	deletekeywords={},            				  % if you want to delete keywords from the given language
+	escapeinside={\%*}{*)},          			 % if you want to add LaTeX within your code
+	%frame=ltbr,	                   % adds a frame around the code
+	keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+	keywordstyle=\color{thi-blue},       % keyword style
+	language=C,                 % the language of the code
+	otherkeywords={},           % if you want to add more keywords to the set
+	numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+	numbersep=5pt,                   % how far the line-numbers are from the code
+	numberstyle=\tiny\color{fpColor}, % the style that is used for the line-numbers
+	rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+	showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+	showstringspaces=false,          % underline spaces within strings only
+	showtabs=false,                  % show tabs within strings adding particular underscores
+	stepnumber=2,                    % the step between two line-numbers. If it's 1, each line will be numbered
+	stringstyle=\color{fpDarker},     % string literal style
+	tabsize=2,	                   % sets default tabsize to 2 spaces
+	title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+% Erlaubt das einfügen von Sonderzeichen im Quellcode 
+\lstset{literate=
+	{á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+	{Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+	{à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+	{À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+	{ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+	{Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+	{â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+	{Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+	{œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+	{ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+	{ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+	{€}{{\EUR}}1 {£}{{\pounds}}1
+}
+
+\lstdefinelanguage{PBDL}
+{
+	% list of keywords
+	morekeywords={
+		speed,
+		mainfunc,
+		parallel,
+		wpsequence,
+		function,
+		run,
+		sleep
+	},
+	sensitive=false, % keywords are not case-sensitive
+}
+
+\SetWatermarkScale{3} % Make Watermark big
+
+\presetkeys{todonotes}{backgroundcolor=thi-green}{} % Make Todonots all inline
+
+% -----------------------------------------------------------------------------------------------------------
+% HACKS
+% -----------------------------------------------------------------------------------------------------------
+% Fix glossaries in tabularx env. see: http://tex.stackexchange.com/questions/94885/glossaries-fail-to-expand-in-tabularx
+\makeatletter
+\def\foo#1\hbox#2#3!!{%
+    \def\TX@trial##1{#1\hbox{\let\glsunset\@gobble#2}#3}%
+}
+\expandafter\foo\TX@trial{#1}!!
+\makeatother
+\endinput
